@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nightschool: learn skills under the stars</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14122b;--ink2:#1f1b40;--line:#3a3470;--paper:#f3eeff;--dim:#9b95c9;--gold:#ffd166;--teal:#4fd1c5;--coral:#ff6b8b}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Bricolage Grotesque",system-ui,sans-serif;background:var(--ink);color:var(--paper);line-height:1.5;min-height:100vh;
+background-image:radial-gradient(1px 1px at 20% 30%,#fff8 50%,transparent),radial-gradient(1px 1px at 70% 20%,#fff6 50%,transparent),radial-gradient(1.5px 1.5px at 40% 80%,#fff7 50%,transparent),radial-gradient(1px 1px at 88% 66%,#fff6 50%,transparent),radial-gradient(ellipse at 80% -10%,#3b2d8a66,transparent 55%);
+background-size:260px 260px,340px 340px,300px 300px,220px 220px,100% 100%}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:20px 0}
+.brand{font-weight:800;font-size:1.4rem;letter-spacing:-.02em}
+.brand span{color:var(--gold)}
+.me{display:flex;align-items:center;gap:14px;background:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:8px 8px 8px 18px}
+.me b{font-weight:600}
+.bar{width:120px;height:8px;background:var(--ink);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .6s}
+.streak{background:var(--ink);border-radius:999px;padding:4px 12px;font-size:.9rem}
+h1{font-size:clamp(2.2rem,6vw,4.4rem);font-weight:800;line-height:1;letter-spacing:-.035em;max-width:14ch;margin:24px 0 12px}
+.lede{color:var(--dim);max-width:52ch;font-size:1.05rem}
+.tabs{display:flex;gap:8px;margin:28px 0 12px;flex-wrap:wrap}
+.tab{background:none;border:1px solid var(--line);border-radius:999px;padding:8px 18px;transition:.2s}
+.tab[aria-pressed=true]{background:var(--paper);color:var(--ink);border-color:var(--paper);font-weight:600}
+.stage{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.map{background:#0e0c22aa;border:1px solid var(--line);border-radius:28px;overflow:hidden}
+svg{display:block;width:100%;height:auto}
+.edge{stroke:var(--line);stroke-width:2;stroke-dasharray:5 6}
+.edge.on{stroke:var(--gold);stroke-dasharray:none;stroke-width:2.5;filter:drop-shadow(0 0 4px var(--gold))}
+.node{cursor:pointer}
+.node .core{fill:var(--ink2);stroke:var(--dim);stroke-width:2;transition:.3s}
+.node text{fill:var(--dim);font-size:15px;font-weight:600;text-anchor:middle;pointer-events:none}
+.node.open .core{stroke:var(--teal);animation:pulse 2s infinite}
+.node.open text{fill:var(--paper)}
+.node.done .core{fill:var(--gold);stroke:var(--gold);filter:drop-shadow(0 0 10px var(--gold))}
+.node.done text{fill:var(--gold)}
+.node.sel .core{stroke:var(--coral);stroke-width:4}
+@keyframes pulse{50%{stroke-width:6;stroke-opacity:.4}}
+.spark{fill:var(--gold);animation:fly .9s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+.panel,.card{background:var(--ink2);border:1px solid var(--line);border-radius:28px;padding:24px}
+.panel h2{font-size:1.6rem;letter-spacing:-.02em}
+.panel p{color:var(--dim);margin:8px 0 16px}
+.tag{display:inline-block;background:var(--ink);border-radius:999px;padding:2px 12px;font-size:.85rem;margin-bottom:10px}
+.btn{background:var(--gold);color:var(--ink);border:0;border-radius:14px;padding:12px 18px;font-weight:700;width:100%;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn[disabled]{background:var(--line);color:var(--dim);cursor:not-allowed;transform:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 40px}
+.orbit{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.ring{position:relative;width:150px;height:150px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8}
+.ring .bg{stroke:var(--ink)}
+.ring .fg{stroke:var(--teal);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;font-size:2rem;font-weight:800}
+.modes{display:flex;gap:6px;margin-bottom:12px}
+.modes button{background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:4px 12px}
+.modes button[aria-pressed=true]{border-color:var(--teal);color:var(--teal)}
+.row{display:flex;gap:8px}
+.ghost{background:none;border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.card h3{font-size:1.3rem;margin-bottom:6px}
+.card .sub{color:var(--dim);margin-bottom:16px}
+.quest{font-size:1.25rem;font-weight:600;line-height:1.3;margin-bottom:16px;min-height:3.9em}
+.quest.ok{color:var(--teal);text-decoration:line-through}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--paper);color:var(--ink);padding:12px 22px;border-radius:14px;font-weight:600;transition:transform .35s;z-index:9}
+.toast.show{transform:translate(-50%,0)}
+footer{color:var(--dim);padding:0 0 40px;font-size:.9rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer button{background:none;border:0;color:var(--dim);text-decoration:underline}
+@media(max-width:860px){.stage,.grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script src="api.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">Night<span>school</span></div>
+  <a href="learn.html" style="color:var(--gold);font-weight:600">Open the learn zone: read, quiz, play</a>
+  <div class="me" aria-live="polite">
+    <b id="title">Stargazer</b><span id="lvl">Level 1</span>
+    <div class="bar" role="progressbar" aria-label="XP to next level"><i id="xpbar"></i></div>
+    <span class="streak" id="streak">0 day streak</span>
+  </div>
+</header>
+
+<h1>Learn one star at a time.</h1>
+<p class="lede">Pick a constellation, light up each skill in order, and turn your study time into XP. Your progress stays in this browser.</p>
+
+<div class="tabs" id="tabs" role="group" aria-label="Constellations"></div>
+
+<div class="stage">
+  <div class="map"><svg id="sky" viewBox="0 0 800 460" role="img" aria-label="Skill constellation"></svg></div>
+  <aside class="panel" id="panel"></aside>
+</div>
+
+<div class="grid">
+  <section class="card">
+    <h3>Focus orbit</h3>
+    <p class="sub">Finish a session to earn 1 XP per minute.</p>
+    <div class="orbit">
+      <div class="ring">
+        <svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="54"/><circle class="fg" id="fg" cx="60" cy="60" r="54"/></svg>
+        <div class="t" id="clock">25:00</div>
+      </div>
+      <div>
+        <div class="modes" id="modes"></div>
+        <div class="row"><button class="btn" id="go" style="width:auto">Start session</button><button class="ghost" id="rst">Reset</button></div>
+      </div>
+    </div>
+  </section>
+  <section class="card">
+    <h3>Today's spark</h3>
+    <p class="sub">A ten-minute challenge. Finish it for 15 XP.</p>
+    <div class="quest" id="quest"></div>
+    <div class="row"><button class="btn" id="qdone" style="width:auto">I did it</button><button class="ghost" id="qnew">Give me another</button></div>
+  </section>
+</div>
+
+<footer><span>Built with plain HTML, CSS and JavaScript.</span><button id="reset">Reset all progress</button></footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s), NS="http://www.w3.org/2000/svg";
+const TRACKS={
+ web:{name:"Web builder",nodes:[
+  ["html","HTML",100,350,[],40,"Structure a page with headings, lists, links and forms. Build a one-page bio today."],
+  ["css","CSS",250,400,["html"],45,"Style with flexbox and grid. Recreate a site you like, using only CSS."],
+  ["js","JavaScript",300,250,["html"],55,"Make pages react to clicks. Start with a counter, then a to-do list."],
+  ["git","Git",130,160,[],40,"Save snapshots of your work: commit, branch, push. Push this very site."],
+  ["dom","The DOM",470,310,["js","css"],50,"Select, change and create elements from code. Build a tiny quiz."],
+  ["react","React",630,190,["dom"],60,"Break interfaces into components that hold their own state."],
+  ["deploy","Deploy",690,370,["git","dom"],50,"Put your site on the internet with GitHub Pages in five minutes."]]},
+ data:{name:"Data explorer",nodes:[
+  ["xl","Spreadsheets",100,330,[],35,"Sort, filter and pivot. Clean one messy table from start to finish."],
+  ["sql","SQL",250,400,["xl"],50,"Ask databases questions with SELECT, JOIN and GROUP BY."],
+  ["py","Python",290,230,[],50,"Variables, loops, functions. Solve five small puzzles."],
+  ["stat","Statistics",130,130,[],45,"Mean, spread, and why a small sample can lie to you."],
+  ["pd","Pandas",470,300,["py","sql"],55,"Load a CSV, group it, summarise it. Three lines can answer a lot."],
+  ["viz","Charts",630,180,["pd"],50,"Pick the chart that fits the question, then remove everything extra."],
+  ["ml","Machine learning",690,360,["pd","stat"],65,"Train a simple model and measure it on data it has never seen."]]},
+ design:{name:"Design maker",nodes:[
+  ["type","Typography",110,300,[],40,"Pair two typefaces and set a clear size scale. Less is louder."],
+  ["color","Colour",250,400,[],40,"Build a five-colour palette and check its contrast."],
+  ["lay","Layout",300,220,["type"],50,"Use space, alignment and grids to guide the eye."],
+  ["brand","Identity",140,120,["type","color"],50,"Design a logo mark and voice for an imaginary shop."],
+  ["fig","Figma",480,320,["color","lay"],55,"Frames, auto layout and components. Redesign one app screen."],
+  ["ux","User research",630,190,["lay"],55,"Watch five people use your design and note where they hesitate."],
+  ["proto","Prototyping",690,370,["fig"],50,"Link screens into a clickable flow and test it with a friend."]]}
+};
+const QUESTS=["Explain one thing you learned this week to a friend, without notes.","Rebuild yesterday's exercise from memory.","Find one error in your old work and fix it.","Write five questions about your current topic, then answer them.","Read one documentation page and try its first example.","Teach a rubber duck what a function is.","Sketch your current project on paper before touching the keyboard.","Delete ten lines of your code and keep it working.","Watch a tutorial at 1x speed and pause to predict the next step.","Send one useful link about your topic to someone.","Make something ugly and finish it. Polish comes next.","Turn a tutorial's example into something about your own life."];
+const TITLES=["Stargazer","Spark Catcher","Comet Chaser","Orbit Keeper","Nova Maker","Constellation Weaver","Galaxy Mind"];
+const KEY="nightschool-v1";
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||{xp:0,done:{},streak:0,last:"",quest:0,qok:""};
+let track="web",sel=null;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const day=(o=0)=>{const d=new Date();d.setDate(d.getDate()-o);return d.toDateString()};
+
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),2600)}
+function addXP(n,why){
+  const before=Math.floor(S.xp/100);S.xp+=n;
+  if(S.last!==day()){S.streak=S.last===day(1)?S.streak+1:1;S.last=day()}
+  save();hud();
+  toast(`+${n} XP · ${why}`);
+  if(Math.floor(S.xp/100)>before)setTimeout(()=>toast(`Level ${Math.floor(S.xp/100)+1}: ${TITLES[Math.min(Math.floor(S.xp/100),TITLES.length-1)]}`),2700);
+}
+function hud(){
+  const l=Math.floor(S.xp/100);
+  $("#title").textContent=TITLES[Math.min(l,TITLES.length-1)];
+  $("#lvl").textContent="Level "+(l+1);
+  $("#xpbar").style.width=(S.xp%100)+"%";
+  const live=S.last===day()||S.last===day(1)?S.streak:0;
+  $("#streak").textContent=`${live} day streak`;
+}
+
+function state(n){
+  if(S.done[n[0]])return"done";
+  return n[4].every(r=>S.done[r])?"open":"locked";
+}
+function draw(){
+  const T=TRACKS[track],sky=$("#sky");sky.innerHTML="";
+  const by=Object.fromEntries(T.nodes.map(n=>[n[0],n]));
+  T.nodes.forEach(n=>n[4].forEach(r=>{
+    const a=by[r],l=document.createElementNS(NS,"line");
+    l.setAttribute("x1",a[2]);l.setAttribute("y1",a[3]);l.setAttribute("x2",n[2]);l.setAttribute("y2",n[3]);
+    l.setAttribute("class","edge"+(S.done[r]&&S.done[n[0]]?" on":""));sky.appendChild(l);
+  }));
+  T.nodes.forEach(n=>{
+    const st=state(n),g=document.createElementNS(NS,"g");
+    g.setAttribute("class",`node ${st}${sel===n[0]?" sel":""}`);
+    g.setAttribute("tabindex","0");g.setAttribute("role","button");
+    g.setAttribute("aria-label",`${n[1]}, ${st}`);
+    g.innerHTML=`<circle class="core" cx="${n[2]}" cy="${n[3]}" r="${st==="done"?20:16}"/><text x="${n[2]}" y="${n[3]+40}">${n[1]}</text>`;
+    const pick=()=>{sel=n[0];draw();panel()};
+    g.onclick=pick;g.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick()}};
+    sky.appendChild(g);
+  });
+  const done=T.nodes.filter(n=>S.done[n[0]]).length;
+  $("#tabs").querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===track));
+}
+function panel(){
+  const T=TRACKS[track],n=T.nodes.find(x=>x[0]===sel),p=$("#panel");
+  if(!n){
+    const d=T.nodes.filter(x=>S.done[x[0]]).length;
+    p.innerHTML=`<span class="tag">${T.name}</span><h2>${d} of ${T.nodes.length} stars lit</h2><p>Tap a glowing teal star to see what to practise. Grey stars unlock when the stars linked to them are lit.</p>`;return;
+  }
+  const st=state(n),names=n[4].filter(r=>!S.done[r]).map(r=>T.nodes.find(x=>x[0]===r)[1]);
+  p.innerHTML=`<span class="tag">${n[5]} XP</span><h2>${n[1]}</h2><p>${n[6]}</p>
+  <button class="btn" id="learn" ${st==="done"?"disabled":st==="locked"?"disabled":""}>${st==="done"?"Star lit":st==="locked"?"Light "+names.join(" and ")+" first":"I learned this"}</button>`;
+  $("#learn").onclick=()=>{
+    if(state(n)!=="open")return;
+    S.done[n[0]]=1;addXP(n[5],n[1]+" lit");
+    draw();panel();burst(n[2],n[3]);
+  };
+}
+function burst(x,y){
+  const sky=$("#sky");
+  for(let i=0;i<14;i++){
+    const c=document.createElementNS(NS,"circle"),a=i/14*6.28,r=50+Math.random()*50;
+    c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",3);c.setAttribute("class","spark");
+    c.style.setProperty("--dx",Math.cos(a)*r+"px");c.style.setProperty("--dy",Math.sin(a)*r+"px");
+    sky.appendChild(c);setTimeout(()=>c.remove(),1000);
+  }
+}
+$("#tabs").innerHTML=Object.entries(TRACKS).map(([k,t])=>`<button class="tab" data-k="${k}" aria-pressed="false">${t.name}</button>`).join("");
+$("#tabs").onclick=e=>{const k=e.target.dataset.k;if(k){track=k;sel=null;draw();panel()}};
+
+/* focus orbit */
+const C=2*Math.PI*54,fg=$("#fg");fg.style.strokeDasharray=C;
+let mins=25,left=25*60,tick=null,end=0;
+$("#modes").innerHTML=[5,15,25,45].map(m=>`<button data-m="${m}" aria-pressed="${m===25}">${m} min</button>`).join("");
+const fmt=s=>String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+function ring(){$("#clock").textContent=fmt(left);fg.style.strokeDashoffset=C*(1-left/(mins*60))}
+function stop(){clearInterval(tick);tick=null;$("#go").textContent="Start session"}
+$("#modes").onclick=e=>{const m=+e.target.dataset.m;if(!m||tick)return;mins=m;left=m*60;
+  $("#modes").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.m===m));ring()};
+$("#go").onclick=()=>{
+  if(tick){stop();return}
+  end=Date.now()+left*1000;$("#go").textContent="Pause";
+  tick=setInterval(()=>{
+    left=Math.max(0,Math.round((end-Date.now())/1000));ring();
+    document.title=left?`${fmt(left)} · Nightschool`:"Nightschool: learn skills under the stars";
+    if(!left){stop();addXP(mins,"Focus session done");left=mins*60;ring()}
+  },250);
+};
+$("#rst").onclick=()=>{stop();left=mins*60;ring()};
+
+/* daily spark */
+function quest(){
+  const q=$("#quest");q.textContent=QUESTS[S.quest%QUESTS.length];
+  const ok=S.qok===day()+S.quest;q.classList.toggle("ok",ok);$("#qdone").disabled=ok;$("#qdone").textContent=ok?"Done today":"I did it";
+}
+$("#qdone").onclick=()=>{S.qok=day()+S.quest;addXP(15,"Spark finished");quest()};
+$("#qnew").onclick=()=>{S.quest=Math.floor(Math.random()*QUESTS.length);save();quest()};
+if(!S.qseed||S.qseed!==day()){S.qseed=day();S.quest=Math.floor(Math.random()*QUESTS.length);save()}
+
+$("#reset").onclick=()=>{if(confirm("Erase all XP and lit stars?")){S={xp:0,done:{},streak:0,last:"",quest:0,qok:""};save();sel=null;hud();draw();panel();quest()}};
+
+hud();draw();panel();quest();ring();
+</script>
+</body>
+</html>

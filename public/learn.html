@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn zone · Nightschool</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14122b;--ink2:#1f1b40;--line:#3a3470;--paper:#f3eeff;--dim:#9b95c9;--gold:#ffd166;--teal:#4fd1c5;--coral:#ff6b8b}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Bricolage Grotesque",system-ui,sans-serif;background:var(--ink);color:var(--paper);line-height:1.55;min-height:100vh;background-image:radial-gradient(ellipse at 80% -10%,#3b2d8a66,transparent 55%)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.wrap{max-width:860px;margin:0 auto;padding:0 20px 60px}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 0;flex-wrap:wrap;gap:10px}
+a{color:var(--gold);font-weight:600}
+h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:8px 0 16px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pill{background:none;border:1px solid var(--line);border-radius:999px;padding:7px 18px}
+.pill[aria-pressed=true]{background:var(--paper);color:var(--ink);border-color:var(--paper);font-weight:600}
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:24px;padding:24px;margin-top:14px}
+.card h2{font-size:1.4rem;margin-bottom:8px;letter-spacing:-.02em}
+.card p{color:#d8d2f5;max-width:64ch;margin-bottom:10px}
+.btn{background:var(--gold);color:var(--ink);border:0;border-radius:14px;padding:11px 18px;font-weight:700}
+.btn[disabled]{background:var(--line);color:var(--dim);cursor:default}
+.opt{display:block;width:100%;text-align:left;background:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:8px 0;transition:.15s}
+.opt:hover:not([disabled]){border-color:var(--teal)}
+.opt.good{border-color:var(--teal);background:#4fd1c522}
+.opt.bad{border-color:var(--coral);background:#ff6b8b22}
+.why{color:var(--dim);margin:10px 0}
+.meta{color:var(--dim);font-size:.95rem;margin-bottom:6px}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.tile{aspect-ratio:1/.8;border-radius:16px;border:1px solid var(--line);background:var(--ink);font-weight:600;padding:6px;font-size:clamp(.75rem,2.6vw,1rem);display:grid;place-items:center;text-align:center;transition:.2s}
+.tile.up{background:var(--paper);color:var(--ink)}
+.tile.ok{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+input{font:inherit;background:var(--ink);color:var(--paper);border:1px solid var(--line);border-radius:14px;padding:11px 16px;width:100%;margin:10px 0}
+.scr{font-size:2.2rem;font-weight:800;letter-spacing:.2em;margin:8px 0;color:var(--gold);word-break:break-all}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--paper);color:var(--ink);padding:12px 22px;border-radius:14px;font-weight:600;transition:transform .35s}
+.toast.show{transform:translate(-50%,0)}
+</style>
+<script src="api.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header><a href="index.html">Back to the constellations</a><span id="xp" class="meta"></span></header>
+<h1>Learn zone</h1>
+<div class="pills" id="subj" role="group" aria-label="Subject"></div>
+<div class="pills" id="tabs" role="group" aria-label="Section"></div>
+<main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const SUBJ={web:"Web builder",data:"Data explorer",design:"Design maker"};
+const D={
+web:{
+ read:[["HTML gives a page its skeleton","HTML wraps content in tags. Headings, paragraphs, lists, links and forms each have a tag. Use meaningful tags such as nav, main and button, so browsers and screen readers understand your page."],
+       ["Flexbox and Grid","Flexbox lays items out in one direction and is ideal for menus and rows. Grid handles rows and columns together, so it suits whole page layouts. Many layouts use both."]],
+ quiz:[["Which CSS declaration creates a flex container?",["display: flex","flex: container","layout: flex","position: flex"],0,"display: flex turns an element into a flex container."],
+       ["What does git commit do?",["Uploads to GitHub","Saves a snapshot in your local repo","Deletes old files","Starts a server"],1,"Commit records a snapshot locally. Push is what uploads it."],
+       ["Which is NOT a separate JavaScript type?",["string","boolean","float","undefined"],2,"JavaScript has one number type, so there is no float type."],
+       ["What is the DOM?",["A database","The page as a tree of objects","A CSS file","A web server"],1,"The browser turns your HTML into a tree that JavaScript can change."],
+       ["Which tag creates a link?",["<link>","<a>","<href>","<url>"],1,"The anchor tag a, with an href attribute, makes links."]],
+ pairs:[["HTML","Page structure"],["CSS","Page style"],["JS","Page behaviour"],["Git","Version history"],["DOM","Page as objects"],["Flexbox","One-way layout"],["Grid","Rows and columns"],["API","How programs talk"]],
+ words:[["FLEXBOX","A CSS layout tool"],["BRANCH","A parallel line of commits"],["SELECTOR","Picks elements to style"],["FUNCTION","Reusable block of code"],["COMMIT","A saved snapshot"]]},
+data:{
+ read:[["Mean, median and the outlier problem","The mean is the average. The median is the middle value once sorted. One extreme value drags the mean but barely moves the median, so check both before you trust a summary."],
+       ["Asking a database with SQL","SELECT chooses columns, WHERE filters rows, GROUP BY summarises groups and JOIN combines tables. Read a query in that order and it becomes a sentence."]],
+ quiz:[["Which SQL clause filters rows?",["WHERE","ORDER BY","GROUP BY","SELECT"],0,"WHERE keeps only the rows that match a condition."],
+       ["What is the median of 1, 3 and 9?",["3","4.3","9","13"],0,"Sorted, the middle value is 3. The mean would be 4.3."],
+       ["Which Python library is built for tables?",["Pandas","Flask","Pygame","Tkinter"],0,"Pandas gives you DataFrames for cleaning and summarising tables."],
+       ["What is overfitting?",["A model that memorises training data and fails on new data","A model that is too small","Data that is too clean","Training too fast"],0,"Always test on data the model has never seen."],
+       ["Best chart for change over time?",["Line chart","Pie chart","Word cloud","Bubble map"],0,"Lines show direction and pace across an ordered axis."]],
+ pairs:[["SQL","Query databases"],["Mean","Average"],["Median","Middle value"],["Pandas","Python tables"],["Outlier","Odd extreme value"],["CSV","Comma text table"],["Model","Learned pattern"],["Bias","Systematic error"]],
+ words:[["QUERY","A question for a database"],["MEDIAN","The middle value"],["PYTHON","Language with Pandas"],["CHART","Data made visual"],["OUTLIER","An extreme value"]]},
+design:{
+ read:[["Type sets the tone","Pick one or two typefaces and stick to them. Serif faces have small feet and feel traditional. Sans serif faces feel modern. Use size, weight and spacing, not more fonts, to show what matters."],
+       ["Contrast and hierarchy","Readers scan before they read. Make the most important thing the biggest or boldest, group related things together, and keep text contrast high enough to read in daylight."]],
+ quiz:[["What does good colour contrast improve?",["Readability","Loading speed","Search ranking","File size"],0,"Higher contrast between text and background is easier to read."],
+       ["Which typeface is a serif?",["Garamond","Helvetica","Arial","Inter"],0,"Garamond has the small strokes called serifs."],
+       ["What is whitespace for?",["Wasting space","Giving content room and focus","Only white colour","Fixing bugs"],1,"Empty space groups things and guides the eye."],
+       ["What is a prototype?",["A clickable mock of a product","Final production code","A logo file","A brand guide"],0,"Prototypes let you test ideas before building them."],
+       ["Why test with real users?",["To see where they struggle","To choose colours","To shorten code","To win awards"],0,"Watching people reveals problems you cannot see yourself."]],
+ pairs:[["Serif","Letters with feet"],["Contrast","Difference that aids reading"],["Grid","Layout skeleton"],["Palette","Set of colours"],["Kerning","Space between letters"],["Wireframe","Layout sketch"],["Persona","Imagined user"],["Hierarchy","Order of importance"]],
+ words:[["KERNING","Space between letters"],["PALETTE","A chosen set of colours"],["WIREFRAME","A rough layout sketch"],["CONTRAST","Difference between tones"],["PERSONA","A made-up typical user"]]}};
+
+const KEY="nightschool-v1";
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||{xp:0,done:{},streak:0,last:"",quest:0,qok:""};
+S.read=S.read||{};
+let subj="web",tab="read",game="memory";
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),2400)}
+function xp(n,why){S.xp+=n;save();$("#xp").textContent=`${S.xp} XP`;toast(`+${n} XP · ${why}`)}
+function pills(el,obj,cur,fn){el.innerHTML=Object.entries(obj).map(([k,v])=>`<button class="pill" data-k="${k}" aria-pressed="${k===cur}">${v}</button>`).join("");el.onclick=e=>{const k=e.target.dataset.k;if(k)fn(k)}}
+function nav(){
+  pills($("#subj"),SUBJ,subj,k=>{subj=k;nav();show()});
+  pills($("#tabs"),{read:"Read",quiz:"Quiz",games:"Games"},tab,k=>{tab=k;nav();show()});
+  $("#xp").textContent=`${S.xp} XP`;
+}
+function show(){({read,quiz:startQuiz,games:startGames})[tab]()}
+
+/* reading */
+function read(){
+  $("#view").innerHTML=D[subj].read.map((r,i)=>{const id=subj+i,done=S.read[id];
+    return`<article class="card"><h2>${r[0]}</h2><p>${r[1]}</p><button class="btn" data-id="${id}" ${done?"disabled":""}>${done?"Read":"Mark as read, +10 XP"}</button></article>`}).join("");
+  $("#view").onclick=e=>{const id=e.target.dataset.id;if(id&&!S.read[id]){S.read[id]=1;e.target.disabled=true;e.target.textContent="Read";xp(10,"Lesson read")}};
+}
+
+/* quiz */
+function startQuiz(){quiz(0,0)}
+function quiz(i,score){
+  const Q=D[subj].quiz,v=$("#view");v.onclick=null;
+  if(i>=Q.length){
+    if(score)xp(score*10,"Quiz finished");
+    v.innerHTML=`<div class="card"><h2>You scored ${score} out of ${Q.length}</h2><p>${score===Q.length?"Perfect run. Try another subject.":"Read the lessons again, then retry for a better score."}</p><button class="btn" id="again">Try again</button></div>`;
+    $("#again").onclick=startQuiz;return;
+  }
+  const q=Q[i];
+  v.innerHTML=`<div class="card"><div class="meta">Question ${i+1} of ${Q.length}</div><h2>${q[0].replace(/</g,"&lt;")}</h2>${q[1].map((o,k)=>`<button class="opt" data-k="${k}">${o.replace(/</g,"&lt;")}</button>`).join("")}<div id="fb"></div></div>`;
+  v.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const k=+b.dataset.k,ok=k===q[2];
+    v.querySelectorAll(".opt").forEach((x,j)=>{x.disabled=true;if(j===q[2])x.classList.add("good")});
+    if(!ok)b.classList.add("bad");
+    $("#fb").innerHTML=`<p class="why">${ok?"Correct. ":"Not quite. "}${q[3]}</p><button class="btn" id="nx">${i+1<Q.length?"Next question":"See score"}</button>`;
+    $("#nx").onclick=()=>quiz(i+1,score+(ok?1:0));$("#nx").focus();
+  });
+}
+
+/* games */
+function startGames(){
+  $("#view").innerHTML=`<div class="pills" id="gsel"></div><div id="g"></div>`;
+  pills($("#gsel"),{memory:"Memory match",scramble:"Word scramble"},game,k=>{game=k;startGames()});
+  game==="memory"?memory():scramble();
+}
+function memory(){
+  const cards=shuffle(D[subj].pairs.flatMap(([a,b],i)=>[{t:a,p:i},{t:b,p:i}]));
+  let open=[],moves=0,found=0,lock=false;
+  $("#g").innerHTML=`<div class="card"><h2>Match each term with its meaning</h2><div class="meta" id="mv">Moves: 0</div><div class="board" id="bd"></div></div>`;
+  const bd=$("#bd");
+  cards.forEach((c,i)=>{
+    const b=document.createElement("button");b.className="tile";b.textContent="?";b.setAttribute("aria-label","Hidden card");
+    b.onclick=()=>{
+      if(lock||b.classList.contains("up")||b.classList.contains("ok"))return;
+      b.classList.add("up");b.textContent=c.t;open.push([b,c]);
+      if(open.length<2)return;
+      moves++;$("#mv").textContent="Moves: "+moves;
+      const [[b1,c1],[b2,c2]]=open;open=[];
+      if(c1.p===c2.p){b1.className=b2.className="tile ok";if(++found===cards.length/2)xp(Math.max(10,40-moves),"Memory match cleared")}
+      else{lock=true;setTimeout(()=>{[b1,b2].forEach(x=>{x.className="tile";x.textContent="?"});lock=false},800)}
+    };bd.appendChild(b);
+  });
+}
+function scramble(){
+  const W=shuffle(D[subj].words);let i=0,pts=0;
+  const scr=w=>{let s;do{s=shuffle(w.split("")).join("")}while(s===w);return s};
+  function round(){
+    if(i>=W.length){$("#g").innerHTML=`<div class="card"><h2>Round over: ${pts} of ${W.length}</h2><button class="btn" id="ag">Play again</button></div>`;$("#ag").onclick=scramble;return}
+    const [w,h]=W[i];
+    $("#g").innerHTML=`<div class="card"><div class="meta">Word ${i+1} of ${W.length}</div><div class="scr">${scr(w)}</div><p>Hint: ${h}</p><input id="ans" autocomplete="off" aria-label="Your answer" placeholder="Type the word"><button class="btn" id="ck">Check</button> <button class="opt" id="sk" style="display:inline-block;width:auto">Skip</button></div>`;
+    const inp=$("#ans");inp.focus();
+    const check=()=>{if(inp.value.trim().toUpperCase()===w){pts++;xp(10,"Word solved");i++;round()}else{inp.value="";inp.placeholder="Not it. Try again";}};
+    $("#ck").onclick=check;inp.onkeydown=e=>{if(e.key==="Enter")check()};
+    $("#sk").onclick=()=>{i++;round()};
+  }
+  round();
+}
+nav();show();
+</script>
+</body>
+</html>
